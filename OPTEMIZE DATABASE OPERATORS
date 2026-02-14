@@ -1,0 +1,181 @@
+-- ==============================
+--  CREATE TABLES
+-- ==============================
+
+SQL> CREATE TABLE Location(loc_id INT PRIMARY KEY,City VARCHAR(30));
+
+SQL> CREATE TABLE Department(dept_id INT PRIMARY KEY,dept_name VARCHAR(30),loc_id INT,FOREIGN KEY(loc_id)REFERENCES Location(loc_id));
+
+SQL> CREATE TABLE Job(job_id INT PRIMARY KEY,job_title VARCHAR(30),min_salary NUMBER (10),max_salary NUMBER(10));.
+
+SQL> CREATE TABLE Employee(emp_id INT PRIMARY KEY,emp_name VARCHAR(30),salary NUMBER(10),job_id INT,dept_id INT,FOREIGN KEY(job_id)REFERENCES Job(job_id),FOREIGN KEY(dept_id)REFERENCES Department(dept_id));
+
+
+-- ==============================
+-- INSERT DATA
+-- ==============================
+
+SQL> INSERT INTO Location VALUES(1,'Kochi');
+SQL> INSERT INTO Location VALUES(2,'Trivandrum');
+SQL> INSERT INTO Location VALUES(3,'Kozhikode');
+SQL> INSERT INTO Location VALUES(4,'Kollam');
+SQL> INSERT INTO Location VALUES(5,'Kottayam');
+
+SQL> INSERT INTO Department VALUES(10,'HR',1);
+SQL> INSERT INTO Department VALUES(20,'Finance',2);
+SQL> INSERT INTO Department VALUES(30,'IT',3);
+SQL> INSERT INTO Department VALUES(40,'HR',4);
+SQL> INSERT INTO Department VALUES(50,'IT',5);
+
+SQL> INSERT INTO Job VALUES(100,'Manager',5000,100000);
+SQL> INSERT INTO Job VALUES(101,'Developer',30000,70000);
+SQL> INSERT INTO Job VALUES(102,'Clerk',20000,40000);
+SQL> INSERT INTO Job VALUES(103,'Staff',25000,40000);
+SQL> INSERT INTO Job VALUES(104,'Tester',35000,60000);
+
+SQL> INSERT INTO Employee VALUES(1,'ARYA',60000,100,10);
+SQL> INSERT INTO Employee VALUES(2,'DEVI',40000,101,30);
+SQL> INSERT INTO Employee VALUES(3,'ATHIRA',25000,102,20);
+SQL> INSERT INTO Employee VALUES(4,'TINI',35000,101,40);
+SQL> INSERT INTO Employee VALUES(5,'BINI',29000,102,NULL);
+
+-- ==============================
+-- JOIN
+-- ==============================
+
+SQL> SELECT e.emp_name, j.job_title FROM Employee e INNER JOIN Job j ON e.job_id=j.job_id;
+
+EMP_NAME                       JOB_TITLE
+------------------------------ ------------------------------
+ARYA                           Manager
+TINI                           Developer
+DEVI                           Developer
+BINI                           Clerk
+ATHIRA                         Clerk
+
+SQL> SELECT e.emp_name,d.dept_name FROM Employee e LEFT JOIN Department d ON e.dept_id=d.dept_id;
+
+EMP_NAME                       DEPT_NAME
+------------------------------ ------------------------------
+ARYA                           HR
+ATHIRA                         Finance
+DEVI                           IT
+TINI                           HR
+BINI
+
+SQL> SELECT d.dept_name, e.emp_name FROM Department d RIGHT JOIN Employee e ON d.dept_id=e.dept_id;
+
+DEPT_NAME                      EMP_NAME
+------------------------------ ------------------------------
+HR                             ARYA
+Finance                        ATHIRA
+IT                             DEVI
+HR                             TINI
+                               BINI
+
+-- ==============================
+-- AGGREGATE FUNCTIONS
+-- ==============================
+
+SQL> SELECT d.dept_name,SUM(e.salary)AS total_salary FROM employee e  JOIN Department d ON e.dept_id=d.dept_id GROUP BY d.dept_name;
+
+DEPT_NAME                      TOTAL_SALARY
+------------------------------ ------------
+IT                                    40000
+HR                                    95000
+Finance                               25000
+
+SQL> SELECT J.JOB_TITLE,avg(e.salary)AS avg_salary FROM Employee e JOIN Job j ON e.job_id=j.job_id GROUP BY j.job_title;
+
+JOB_TITLE                      AVG_SALARY
+------------------------------ ----------
+Manager                             60000
+Clerk                               27000
+Developer                           37500
+
+SQL> SELECT MIN(salary)AS min_salary FROM Employee;
+
+MIN_SALARY
+----------
+     25000
+
+SQL> SELECT MAX(E.salary)AS max_salary FROM Employee e JOIN Department d ON e.dept_id=d.dept_id WHERE d.dept_name='IT';
+
+MAX_SALARY
+----------
+     40000
+
+-- ==============================
+-- SQL OPERATORS
+-- ==============================
+
+SQL> SELECT emp_name FROM Employee WHERE emp_name LIKE'A%';
+
+EMP_NAME
+------------------------------
+ARYA
+ATHIRA
+
+SQL> SELECT emp_name FROM Employee WHERE emp_name LIKE'%A';
+
+EMP_NAME
+------------------------------
+ARYA
+ATHIRA
+
+SQL> SELECT emp_name FROM Employee WHERE dept_id IN(10,20);
+
+EMP_NAME
+------------------------------
+ARYA
+ATHIRA
+
+SQL> SELECT emp_name FROM Employee WHERE dept_id NOT IN(30);
+
+EMP_NAME
+------------------------------
+ARYA
+ATHIRA
+TINI
+
+SQL> SELECT emp_name FROM Employee e JOIN Department d ON  e.dept_id=d.dept_id WHERE salary>30000 AND d.dept_name='IT';
+
+EMP_NAME
+------------------------------
+DEVI
+
+SQL> SELECT emp_name FROM Employee e JOIN Department d ON  e.dept_id=d.dept_id WHERE salary<25000 OR d.dept_name='HR';
+
+EMP_NAME
+------------------------------
+ARYA
+TINI
+
+SQL> SELECT emp_name,salary FROM Employee WHERE salary BETWEEN 30000 AND 50000;
+
+EMP_NAME                           SALARY
+------------------------------ ----------
+DEVI                                40000
+TINI                                35000
+
+SQL> SELECT job_title,min_salary FROM Job WHERE min_salary BETWEEN 25000 AND 60000;
+
+JOB_TITLE                      MIN_SALARY
+------------------------------ ----------
+Developer                           30000
+Staff                               25000
+Tester                              35000
+
+SQL> SELECT emp_name FROM Employee WHERE job_id=100 UNION SELECT emp_name FROM Employee WHERE job_id=101;
+
+EMP_NAME
+------------------------------
+ARYA
+DEVI
+TINI
+
+SQL> SELECT*FROM EMPLOYEE WHERE DEPT_ID=30 AND SALARY>35000;
+
+    EMP_ID EMP_NAME                           SALARY     JOB_ID    DEPT_ID
+---------- ------------------------------ ---------- ---------- ----------
+         2 DEVI                                40000        101         30
